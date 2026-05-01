@@ -26,34 +26,29 @@ export async function callAiStream(
   const apiUrl = API_ENDPOINTS[provider];
   const apiKey = getApiKey(provider);
 
+  console.log(`🚀 Sending request to ${provider} (${modelId})...`);
+  
   const payload = {
     model: modelId,
     messages: [{ role: 'system', content: systemPrompt }, ...messages],
     stream: true,
     temperature: 0.7,
-    max_tokens: 4096,
+    max_tokens: 2048, // 降低一点 max_tokens 以提高兼容性
   };
 
-  // 处理不同供应商的特殊参数需求
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey}`,
+  };
+
+  // 阿里云特殊处理
   if (provider === 'aliyun') {
-    // 阿里云百炼可能需要特殊的头部
-    return fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'X-DashScope-SSE': 'enable' // 启用流式输出
-      },
-      body: JSON.stringify(payload),
-    });
+    (headers as any)['X-DashScope-SSE'] = 'enable';
   }
 
   return fetch(apiUrl, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
+    headers,
     body: JSON.stringify(payload),
   });
 }

@@ -1,61 +1,72 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAgentBySubdomain, getSystemPrompt } from '@/lib/agents';
 import { callAiStream } from '@/lib/ai-router';
-import { CreditService } from '@/lib/services/credits';
-import { createBrowserClient } from '@supabase/ssr';
-import type { ChatRequest } from '@/types';
-
-export const runtime = 'edge'; 
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, subdomain } = (await req.json()) as ChatRequest;
+    const { message, image, subdomain, history } = await req.json();
 
+    if (!message || !subdomain) {
+      return NextResponse.json({ error: '缺少必要参数 (message/subdomain)' }, { status: 400 });
+    }
+
+    // 1. 获取该 Agent 的完整配置
     const agent = await getAgentBySubdomain(subdomain);
-    if (!agent) return new Response('Agent not found', { status: 404 });
-
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return new Response('Unauthorized - Please login', { status: 401 });
+    if (!agent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
     }
 
-    const hasBalance = await CreditService.checkBalance(user.id, agent.credit_per_use);
-    if (!hasBalance) {
-      return new Response('Insufficient credits', { status: 402 });
-    }
+    console.log(`🔍 Chat attempt for agent: ${subdomain} (Guest Mode)`);
 
+    // 2. 获取系统提示词
     const systemPrompt = await getSystemPrompt(agent.id);
-    const aiResponse = await callAiStream(
-      agent.api_provider,
-      agent.model_id,
+
+    // 3. 构建当前消息
+    let currentUserMessage;
+    let targetModelId = agent.model_id;
+
+    if (image) {
+      // 携带图片，自动升级为视觉大模型
+      targetModelId = 'Qwen/Qwen2-VL-72B-Instruct';
+      currentUserMessage = {
+        role: 'user',
+        content: [
+          { type: 'image_url', image_url: { url: image } },
+          { type: 'text', text: message }
+        ]
+      };
+    } else {
+      currentUserMessage = { role: 'user', content: message };
+    }
+
+    // 4. 构建对话上下文 (合并历史记录与当前消息)
+    const messages = [...(history || []), currentUserMessage];
+
+    // 5. 调用 AI 路由
+    const response = await callAiStream(
+      agent.api_provider as any,
+      targetModelId,
       messages,
       systemPrompt
     );
 
-    const stream = aiResponse.body;
-    if (!stream) throw new Error('No AI content');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('AI Provider Error:', errorData);
+      throw new Error(errorData.error?.message || `AI Provider Error: ${response.status}`);
+    }
 
-    // 同步扣费
-    await CreditService.deductAndLog(
-      user.id,
-      agent.id,
-      agent.credit_per_use,
-      agent.model_id
-    );
-
-    return new Response(stream, {
+    // 4. 返回流式响应
+    return new Response(response.body, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
       },
     });
+
   } catch (error: any) {
     console.error('Chat API Error:', error);
-    return new Response(error.message || 'Internal Error', { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

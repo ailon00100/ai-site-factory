@@ -4,18 +4,19 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Agent, AgentCategory } from '@/types';
+import GlobalHeader from '@/components/GlobalHeader';
 
 const CATEGORY_LABELS: Record<string, string> = {
   text: '文本创作',
-  image: '图像生成',
-  vision: '视觉理解',
-  code: '代码辅助',
-  business: '商业办公',
+  vision: '图像生成',
+  code: '程序员工具',
+  business: '商业职场',
   edu: '教育学习',
   marketing: '营销电商',
   lifestyle: '心理生活',
+  multimedia: '多媒体影音',
   pro: '专业咨询',
-  game: '游戏娱乐',
+  game: '游戏科幻',
 };
 
 export default function HomePage() {
@@ -51,12 +52,14 @@ export default function HomePage() {
     : agents.filter(a => a.category === filter);
 
   return (
-    <main className="min-h-screen bg-[#030712] text-white">
-      {/* Hero Section */}
-      <section className="relative pt-20 pb-16 px-6 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 blur-[120px] rounded-full" />
-        
-        <div className="max-w-6xl mx-auto relative z-10 text-center">
+    <>
+      <GlobalHeader />
+      <main className="min-h-screen bg-[#030712] text-white pt-16">
+        {/* Hero Section */}
+        <section className="relative pt-20 pb-16 px-6 overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 blur-[120px] rounded-full" />
+          
+          <div className="max-w-6xl mx-auto relative z-10 text-center">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -150,5 +153,6 @@ export default function HomePage() {
         )}
       </section>
     </main>
+    </>
   );
 }

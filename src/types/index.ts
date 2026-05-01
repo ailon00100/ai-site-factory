@@ -14,6 +14,7 @@ export interface Agent {
   credit_per_use: number;
   is_active: boolean;
   created_at: string;
+  last_updated?: string;
 }
 
 export interface ChatMessage {
