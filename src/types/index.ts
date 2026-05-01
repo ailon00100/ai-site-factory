@@ -13,6 +13,7 @@ export interface Agent {
   api_provider: ApiProvider;
   credit_per_use: number;
   is_active: boolean;
+  industry_info?: any;
   created_at: string;
   last_updated?: string;
 }

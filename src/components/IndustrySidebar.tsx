@@ -16,10 +16,10 @@ export default function IndustrySidebar({ agent }: IndustrySidebarProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  
+
   // 使用本地免登录能源系统
   const { energy, deductEnergy } = useEnergy();
-  
+
   // 检查是否已登录及云端余额
   const [user, setUser] = useState<any>(null);
   const [cloudBalance, setCloudBalance] = useState<number | null>(null);
@@ -39,12 +39,12 @@ export default function IndustrySidebar({ agent }: IndustrySidebarProps) {
   };
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }: any) => {
       setUser(data.user);
       if (data.user) fetchCloudBalance(data.user.id);
     });
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       setUser(session?.user || null);
       if (session?.user) {
         fetchCloudBalance(session.user.id);
@@ -56,17 +56,17 @@ export default function IndustrySidebar({ agent }: IndustrySidebarProps) {
     // 监听云端余额变动
     const channel = supabase
       .channel('profile_changes_sidebar')
-      .on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
         table: 'profiles',
         filter: user ? `id=eq.${user.id}` : undefined
-      }, (payload) => {
+      }, (payload: any) => {
         setCloudBalance(payload.new.energy_balance);
       })
       .subscribe();
 
-    return () => { 
+    return () => {
       authListener.subscription.unsubscribe();
       supabase.removeChannel(channel);
     };
@@ -106,7 +106,7 @@ export default function IndustrySidebar({ agent }: IndustrySidebarProps) {
 
   const handleLoginSuccess = async () => {
     setIsLoginOpen(false);
-    
+
     // 如果本地有余额，执行同步合并
     // 此时 user 还未完全更新到 state，所以 energy 仍是本地余额
     if (energy > 0 && !user) {
@@ -116,7 +116,7 @@ export default function IndustrySidebar({ agent }: IndustrySidebarProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ localEnergy: energy }),
         });
-        
+
         if (res.ok) {
           // 同步成功后，直接清空本地缓存的额度，防止后续退出登录时重复使用
           localStorage.setItem('ai_site_energy', '0');
@@ -152,8 +152,8 @@ export default function IndustrySidebar({ agent }: IndustrySidebarProps) {
             </div>
           ) : (
             tips.map((tip, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="group p-4 rounded-xl bg-gray-900/40 border border-gray-800 hover:border-blue-500/30 hover:bg-gray-900/60 transition-all duration-300 relative overflow-hidden"
               >
                 <h4 className="text-sm font-medium text-white mb-2 group-hover:text-blue-400 transition-colors">
@@ -165,17 +165,17 @@ export default function IndustrySidebar({ agent }: IndustrySidebarProps) {
               </div>
             ))
           )}
-          
+
           {!isLoading && tips.length === 0 && (
             <p className="text-xs text-gray-500 italic text-center py-10">
               正在召唤 AI 深度分析行业数据...
             </p>
           )}
         </div>
-        
+
         <div className="mt-auto space-y-4">
           {/* 变现入口：余额卡片 */}
-          <div 
+          <div
             onClick={() => setIsPricingOpen(true)}
             className="p-4 rounded-2xl bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 border border-white/10 hover:border-white/20 transition-all cursor-pointer group"
           >
@@ -194,8 +194,8 @@ export default function IndustrySidebar({ agent }: IndustrySidebarProps) {
               <span className="text-xs text-gray-500">次</span>
             </div>
             <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-              <div 
-                className={`h-full transition-all duration-1000 ${displayEnergy > 0 ? 'bg-gradient-to-r from-blue-500 to-purple-500' : 'bg-red-500'}`} 
+              <div
+                className={`h-full transition-all duration-1000 ${displayEnergy > 0 ? 'bg-gradient-to-r from-blue-500 to-purple-500' : 'bg-red-500'}`}
                 style={{ width: `${Math.min((displayEnergy / (isPro ? 3000 : 50)) * 100, 100)}%` }}
               ></div>
             </div>
@@ -209,7 +209,7 @@ export default function IndustrySidebar({ agent }: IndustrySidebarProps) {
 
           {/* 渐进式登录引导按钮 */}
           {!user && energy > 0 && (
-            <div 
+            <div
               onClick={handleBindAccount}
               className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 transition-colors cursor-pointer"
             >
@@ -239,12 +239,12 @@ export default function IndustrySidebar({ agent }: IndustrySidebarProps) {
         </div>
       </aside>
 
-      <PricingModal 
-        isOpen={isPricingOpen} 
-        onClose={() => setIsPricingOpen(false)} 
+      <PricingModal
+        isOpen={isPricingOpen}
+        onClose={() => setIsPricingOpen(false)}
       />
-      
-      <LoginModal 
+
+      <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
         onSuccess={handleLoginSuccess}
