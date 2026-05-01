@@ -28,9 +28,17 @@ export default function HomePage() {
       try {
         const res = await fetch('/api/agents');
         const data = await res.json();
-        setAgents(data);
+        
+        // 确保 data 是数组，防止非 200 响应导致前端崩溃
+        if (Array.isArray(data)) {
+          setAgents(data);
+        } else {
+          console.error('API 返回格式错误:', data);
+          setAgents([]);
+        }
       } catch (err) {
         console.error('Failed to fetch agents:', err);
+        setAgents([]);
       } finally {
         setLoading(false);
       }
