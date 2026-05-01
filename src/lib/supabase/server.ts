@@ -1,9 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-// 1. 确保这里有 async
 export async function createClient() {
-  // 2. 确保这里有 await
+  // 关键点：在这里加上 await (Next.js 15+ 兼容性修复)
   const cookieStore = await cookies()
 
   return createServerClient(
@@ -12,18 +11,23 @@ export async function createClient() {
     {
       cookies: {
         get(name: string) {
-          // 3. 这里调用 get 就不会报错了
+          // 现在 cookieStore 已经是解析后的对象，可以直接调用 .get
           return cookieStore.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value, ...options })
-          } catch (error) {}
+          } catch (error) {
+            // 在 Server Component 中，如果没有 middleware，有时无法设置 cookie
+            // 这里通常可以忽略，或者在 middleware 中处理
+          }
         },
         remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options })
-          } catch (error) {}
+          } catch (error) {
+            // 同上
+          }
         },
       },
     }

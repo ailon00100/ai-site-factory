@@ -7,8 +7,13 @@ import { useEnergy } from '@/lib/useEnergy';
 import { createBrowserClient } from '@supabase/ssr';
 import PricingModal from './PricingModal';
 import LoginModal from './LoginModal';
+import type { Agent } from '@/types';
 
-export default function GlobalHeader() {
+interface GlobalHeaderProps {
+  agent?: Agent;
+}
+
+export default function GlobalHeader({ agent }: GlobalHeaderProps) {
   const { energy } = useEnergy();
   const [user, setUser] = useState<any>(null);
   const [cloudBalance, setCloudBalance] = useState<number | null>(null);
@@ -23,11 +28,11 @@ export default function GlobalHeader() {
 
   const fetchCloudBalance = async (userId: string) => {
     const { data } = await supabase
-      .from('profiles')
-      .select('energy_balance')
+      .from('users_profile') // 修正表名为 users_profile
+      .select('credits')
       .eq('id', userId)
       .single();
-    if (data) setCloudBalance(data.energy_balance);
+    if (data) setCloudBalance(data.credits);
   };
 
   useEffect(() => {
@@ -50,10 +55,10 @@ export default function GlobalHeader() {
       .on('postgres_changes', { 
         event: 'UPDATE', 
         schema: 'public', 
-        table: 'profiles',
+        table: 'users_profile',
         filter: user ? `id=eq.${user.id}` : undefined
       }, (payload) => {
-        setCloudBalance(payload.new.energy_balance);
+        setCloudBalance(payload.new.credits);
       })
       .subscribe();
 
@@ -89,9 +94,21 @@ export default function GlobalHeader() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 h-16 z-50 bg-black/50 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6">
-        <Link href="/" className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-          AI Site Factory
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            AI Site Factory
+          </Link>
+          
+          {agent && (
+            <div className="flex items-center gap-3 pl-6 border-l border-white/10">
+              <span className="text-xl">{agent.icon}</span>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-white leading-tight">{agent.name}</span>
+                <span className="text-[10px] text-gray-500 uppercase tracking-widest">{agent.category}</span>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="flex items-center gap-4">
           <div 
