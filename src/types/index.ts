@@ -14,6 +14,7 @@ export interface Agent {
   credit_per_use: number;
   is_active: boolean;
   industry_info?: any;
+  suggested_prompts?: string[];
   created_at: string;
   last_updated?: string;
 }

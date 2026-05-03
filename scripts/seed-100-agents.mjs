@@ -141,19 +141,44 @@ async function seed100Agents() {
   console.log('🚀 开始向数据库注入 100 个垂直站群节点...');
 
   // 整理数据格式
-  const inserts = ALL_100_AGENTS.map(agent => ({
-    subdomain: agent.subdomain,
-    name: agent.name,
-    description: agent.description,
-    category: agent.category,
-    icon: agent.icon,
-    model_id: agent.model,
-    primary_color: agent.color,
-    api_provider: 'siliconflow',
-    credits_per_call: agent.category === 'vision' ? 5 : 1, // 视觉消耗更高
-    is_active: true,
-    deploy_status: 'pending'
-  }));
+  const inserts = ALL_100_AGENTS.map(agent => {
+    // 根据分类生成默认提示词
+    let suggestions = [];
+    switch(agent.category) {
+      case 'text':
+        suggestions = ['帮我写一段吸引人的开头', '优化一下这段文字的语气', '帮我列出 5 个创意大纲'];
+        break;
+      case 'vision':
+        suggestions = ['设计一个简约风格的 Logo', '生成一张赛博朋克风的海报', '为一个运动品牌设计头像'];
+        break;
+      case 'code':
+        suggestions = ['这段代码哪里有 Bug？', '帮我重构这段逻辑', '这段代码的性能如何优化？'];
+        break;
+      case 'business':
+        suggestions = ['分析这份合同的潜在风险', '帮我准备一下明天的面试', '写一份本周的工作总结'];
+        break;
+      case 'edu':
+        suggestions = ['用简单的语言解释这个概念', '帮我批改一下这篇作文', '出几道题考考我'];
+        break;
+      default:
+        suggestions = ['你可以做什么？', '帮我解决一个具体问题', '给我一些专业建议'];
+    }
+
+    return {
+      subdomain: agent.subdomain,
+      name: agent.name,
+      description: agent.description,
+      category: agent.category,
+      icon: agent.icon,
+      model_id: agent.model,
+      primary_color: agent.color,
+      api_provider: 'siliconflow',
+      credits_per_call: agent.category === 'vision' ? 5 : 1,
+      is_active: true,
+      deploy_status: 'pending',
+      suggested_prompts: suggestions
+    };
+  });
 
   // 使用 upsert，按 subdomain 防冲突更新
   const { data: result, error } = await supabase

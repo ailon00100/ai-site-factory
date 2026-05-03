@@ -1,9 +1,9 @@
 import type { ChatMessage, ApiProvider } from '@/types';
 
 const API_ENDPOINTS: Record<ApiProvider, string> = {
-  siliconflow: 'https://api.siliconflow.cn/v1/chat/completions',
-  aliyun: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
-  deepseek: 'https://api.deepseek.com/v1/chat/completions',
+  siliconflow: 'https://api.siliconflow.cn/v1',
+  aliyun: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  deepseek: 'https://api.deepseek.com/v1',
 };
 
 function getApiKey(provider: ApiProvider): string {
@@ -23,7 +23,8 @@ export async function callAiStream(
   messages: ChatMessage[],
   systemPrompt: string
 ): Promise<Response> {
-  const apiUrl = API_ENDPOINTS[provider];
+  const baseUrl = API_ENDPOINTS[provider];
+  const apiUrl = `${baseUrl}/chat/completions`;
   const apiKey = getApiKey(provider);
 
   console.log(`🚀 Sending request to ${provider} (${modelId})...`);
@@ -33,7 +34,7 @@ export async function callAiStream(
     messages: [{ role: 'system', content: systemPrompt }, ...messages],
     stream: true,
     temperature: 0.7,
-    max_tokens: 2048, // 降低一点 max_tokens 以提高兼容性
+    max_tokens: 2048,
   };
 
   const headers = {
@@ -41,7 +42,6 @@ export async function callAiStream(
     'Authorization': `Bearer ${apiKey}`,
   };
 
-  // 阿里云特殊处理
   if (provider === 'aliyun') {
     (headers as any)['X-DashScope-SSE'] = 'enable';
   }
@@ -51,4 +51,51 @@ export async function callAiStream(
     headers,
     body: JSON.stringify(payload),
   });
+}
+
+/**
+ * 调用图像生成接口
+ */
+export async function callImageGeneration(
+  provider: ApiProvider,
+  modelId: string,
+  prompt: string,
+  options?: { ratio?: string }
+): Promise<string> {
+  const baseUrl = API_ENDPOINTS[provider];
+  const apiUrl = `${baseUrl}/images/generations`;
+  const apiKey = getApiKey(provider);
+
+  // 映射比例到 SiliconFlow 支持的格式 (例如 1024x1024)
+  const sizeMap: Record<string, string> = {
+    '1:1': '1024x1024',
+    '4:3': '1024x768',
+    '16:9': '1024x576',
+  };
+
+  const payload = {
+    model: modelId,
+    prompt: prompt,
+    image_size: sizeMap[options?.ratio || '1:1'] || '1024x1024',
+    batch_size: 1,
+  };
+
+  console.log(`🎨 Generating image with ${provider} (${modelId})...`);
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || '图像生成失败');
+  }
+
+  const data = await response.json();
+  return data.images?.[0]?.url || data.data?.[0]?.url || '';
 }
