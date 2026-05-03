@@ -173,7 +173,7 @@ async function seed100Agents() {
       model_id: agent.model,
       primary_color: agent.color,
       api_provider: 'siliconflow',
-      credits_per_call: agent.category === 'vision' ? 5 : 1,
+      credits_per_call: 1,
       is_active: true,
       deploy_status: 'pending',
       suggested_prompts: suggestions

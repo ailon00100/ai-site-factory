@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, User, Bot, Loader2, Image as ImageIcon, 
   Settings2, Download, RefreshCw, Layers, 
-  Maximize2, Share2, Palette, Zap, Sparkles
+  Maximize2, Share2, Palette, Zap, Sparkles,
+  Copy, Check, Play
 } from 'lucide-react';
 import type { Agent } from '@/types';
 import PricingModal from './PricingModal';
@@ -20,6 +21,7 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const { energy, deductEnergy } = useEnergy();
 
   const [settings, setSettings] = useState({
@@ -29,9 +31,11 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
     guidance: 7.5
   });
 
-  const handleGenerate = async () => {
-    if (!prompt.trim() || isGenerating) return;
-    const cost = agent.credit_per_use || 5;
+  const handleGenerate = async (overridePrompt?: string) => {
+    const activePrompt = overridePrompt || prompt;
+    if (!activePrompt.trim() || isGenerating) return;
+    
+    const cost = agent.credits_per_call || 5;
     if (energy < cost) {
       setIsPricingOpen(true);
       return;
@@ -39,13 +43,14 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
 
     setIsGenerating(true);
     setResultImage(null);
+    if (overridePrompt) setPrompt(overridePrompt);
 
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `${prompt} (Style: ${settings.style}, Ratio: ${settings.ratio})`,
+          message: `${activePrompt} (Style: ${settings.style}, Ratio: ${settings.ratio})`,
           subdomain: agent.subdomain,
           options: settings 
         }),
@@ -69,6 +74,12 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleCopy = (text: string, index: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
   };
 
   const downloadImage = async () => {
@@ -137,7 +148,7 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
             <span className="text-xs text-gray-500 font-medium">预计消耗</span>
             <div className="flex items-center gap-1.5">
               <Zap size={14} className="text-yellow-500 fill-yellow-500" />
-              <span className="text-sm font-black text-white">{agent.credit_per_use || 5}</span>
+              <span className="text-sm font-black text-white">{agent.credits_per_call || 5}</span>
             </div>
           </div>
           <button
@@ -209,7 +220,42 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
             )}
           </AnimatePresence>
         </div>
-        <div className="p-8 bg-gradient-to-t from-black via-black/80 to-transparent">
+        <div className="p-8 bg-gradient-to-t from-black via-black/80 to-transparent space-y-6">
+          {/* 灵感推荐 */}
+          {agent.suggested_prompts && agent.suggested_prompts.length > 0 && (
+            <div className="max-w-3xl mx-auto flex flex-wrap gap-2">
+              {agent.suggested_prompts.map((p, i) => (
+                <div 
+                  key={i}
+                  className="group relative flex items-center gap-2 bg-gray-900/50 hover:bg-blue-500/10 border border-gray-800 hover:border-blue-500/50 rounded-xl px-4 py-2 transition-all cursor-pointer overflow-hidden"
+                >
+                  <button 
+                    onClick={() => handleGenerate(p)}
+                    className="text-xs text-gray-400 group-hover:text-blue-400 font-medium whitespace-nowrap"
+                  >
+                    {p}
+                  </button>
+                  <div className="flex items-center gap-1 ml-1 pl-2 border-l border-gray-800 group-hover:border-blue-500/30">
+                    <button 
+                      onClick={() => handleCopy(p, i)}
+                      className="text-gray-600 hover:text-white transition-colors p-1"
+                      title="复制提示词"
+                    >
+                      {copiedIndex === i ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                    </button>
+                    <button 
+                      onClick={() => handleGenerate(p)}
+                      className="text-gray-600 hover:text-blue-400 transition-colors p-1"
+                      title="立即生成"
+                    >
+                      <Play size={12} className="fill-current" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="max-w-3xl mx-auto relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl blur opacity-20 group-focus-within:opacity-40 transition-opacity" />
             <textarea

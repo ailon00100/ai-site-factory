@@ -73,12 +73,17 @@ export async function callImageGeneration(
     '16:9': '1024x576',
   };
 
-  const payload = {
+  const payload: any = {
     model: modelId,
     prompt: prompt,
     image_size: sizeMap[options?.ratio || '1:1'] || '1024x1024',
     batch_size: 1,
   };
+
+  // 为 FLUX schnell 模型优化步数
+  if (modelId.includes('schnell')) {
+    payload.num_inference_steps = 4;
+  }
 
   console.log(`🎨 Generating image with ${provider} (${modelId})...`);
 
@@ -92,8 +97,9 @@ export async function callImageGeneration(
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || '图像生成失败');
+    const error = await response.json().catch(() => ({}));
+    console.error('Image Generation API Error:', error);
+    throw new Error(error.message || error.error?.message || `接口调用失败 (${response.status})`);
   }
 
   const data = await response.json();
