@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 
-// 使用 Service Role Key 绕过前端权限，确保核销操作的安全性和原子性
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabaseAdmin = createAdminClient();
 
 export async function POST(req: NextRequest) {
   try {
@@ -53,7 +49,7 @@ export async function POST(req: NextRequest) {
       message: '兑换成功！'
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Redeem API Error:', error);
     return NextResponse.json({ error: '服务器内部错误' }, { status: 500 });
   }

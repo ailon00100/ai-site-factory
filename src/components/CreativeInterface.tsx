@@ -35,7 +35,7 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
     const activePrompt = overridePrompt || prompt;
     if (!activePrompt.trim() || isGenerating) return;
     
-    const cost = agent.credits_per_call || 5;
+    const cost = agent.credit_per_use || 5;
     if (energy < cost) {
       setIsPricingOpen(true);
       return;
@@ -68,9 +68,10 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
         const errorData = await response.json();
         throw new Error(errorData.error || '生成失败');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert(`生成失败: ${err.message}`);
+      const msg = err instanceof Error ? err.message : '未知错误';
+      alert(`生成失败: ${msg}`);
     } finally {
       setIsGenerating(false);
     }
@@ -148,11 +149,11 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
             <span className="text-xs text-gray-500 font-medium">预计消耗</span>
             <div className="flex items-center gap-1.5">
               <Zap size={14} className="text-yellow-500 fill-yellow-500" />
-              <span className="text-sm font-black text-white">{agent.credits_per_call || 5}</span>
+              <span className="text-sm font-black text-white">{agent.credit_per_use || 5}</span>
             </div>
           </div>
           <button
-            onClick={handleGenerate}
+            onClick={() => handleGenerate()}
             disabled={isGenerating || !prompt.trim()}
             className="w-full bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-blue-500/20 disabled:opacity-30 disabled:grayscale transition-all active:scale-95"
           >

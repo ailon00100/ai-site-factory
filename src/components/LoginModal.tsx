@@ -52,13 +52,14 @@ export default function LoginModal({
         if (signInError) throw signInError;
         onSuccess();
       }
-    } catch (err: any) {
-      if (err.message?.includes('Invalid login credentials')) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '认证失败，请重试';
+      if (msg.includes('Invalid login credentials')) {
         setError('账号或密码错误');
-      } else if (err.message?.includes('User already registered')) {
+      } else if (msg.includes('User already registered')) {
         setError('该账号已被注册，请直接登录');
       } else {
-        setError(err.message || '认证失败，请重试');
+        setError(msg);
       }
     } finally {
       setLoading(false);

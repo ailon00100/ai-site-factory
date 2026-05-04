@@ -64,11 +64,11 @@ export function useEnergy() {
     window.addEventListener('energy_updated', handleStorageChange);
 
     // 监听云端变化
-    let channel: any;
+    let channel: ReturnType<typeof supabase.channel> | undefined;
     if (userId) {
       channel = supabase.channel(`useEnergy_${userId}`)
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` }, 
-          (payload) => setEnergy(payload.new.energy_balance)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
+          (payload) => setEnergy((payload.new as { energy_balance: number }).energy_balance)
         ).subscribe();
     }
 
@@ -110,5 +110,5 @@ export function useEnergy() {
     }
   };
 
-  return { energy, deductEnergy, addEnergy, isCloud };
+  return { energy, deductEnergy, addEnergy, isCloud, userId };
 }

@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     // 这里我们不需要流式，直接获取完整结果
     const response = await callAiStream(
-      agent.api_provider as any,
+      agent.api_provider,
       agent.model_id,
       [{ role: 'user', content: '请立即生成最新的行业情报。' }],
       systemPrompt
@@ -77,8 +77,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ news });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Industry News Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

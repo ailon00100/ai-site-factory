@@ -13,7 +13,7 @@ export interface Agent {
   api_provider: ApiProvider;
   credit_per_use: number;
   is_active: boolean;
-  industry_info?: any;
+  industry_info?: { title: string; content: string }[];
   suggested_prompts?: string[];
   created_at: string;
   last_updated?: string;

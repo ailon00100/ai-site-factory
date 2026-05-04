@@ -5,8 +5,9 @@ export async function GET() {
   try {
     const agents = await getAgents();
     return NextResponse.json(agents);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('API Error /api/agents:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

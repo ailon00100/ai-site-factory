@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     // 只有当分类为 vision 且模型 ID 包含 'FLUX' 时才调用图像生成接口
     if (options && agent.category === 'vision' && agent.model_id.toLowerCase().includes('flux')) {
       const imageUrl = await callImageGeneration(
-        agent.api_provider as any,
+        agent.api_provider,
         agent.model_id,
         message,
         { ratio: options.ratio }
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     // 6. 调用 AI 路由
     const response = await callAiStream(
-      agent.api_provider as any,
+      agent.api_provider,
       targetModelId,
       messages,
       systemPrompt
@@ -78,8 +78,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Chat API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

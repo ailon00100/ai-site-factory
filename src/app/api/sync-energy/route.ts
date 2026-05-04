@@ -36,14 +36,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '未授权或未登录' }, { status: 401 });
     }
 
-    // 引入 admin client 以执行可能被 RLS 阻止的加法操作，或者假设 RLS 允许用户 update 自己的 profile
-    // 为了安全起见，这里直接使用 RPC 或者查询然后再更新。
-    // 这里使用 service_role 保证更新成功
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const { createAdminClient } = await import('@/lib/supabase/admin');
+    const supabaseAdmin = createAdminClient();
 
     // 查询当前余额
     const { data: profile } = await supabaseAdmin
@@ -66,7 +60,7 @@ export async function POST(req: NextRequest) {
     console.log(`✅ [Sync] User ${user.id} synced ${localEnergy} local energy. New balance: ${newBalance}`);
 
     return NextResponse.json({ success: true, energy_balance: newBalance });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Sync API Error:', error);
     return NextResponse.json({ error: '同步失败' }, { status: 500 });
   }

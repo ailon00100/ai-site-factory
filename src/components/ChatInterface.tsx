@@ -153,7 +153,7 @@ export default function ChatInterface({ agent, fullWidth = false, initialMessage
     return base;
   }, [agent.category]);
 
-  const handleActionClick = (btn: any) => {
+  const handleActionClick = (btn: { id: string; label: string; icon: React.ReactNode; type: string; accept: string }) => {
     if (btn.type === 'file') {
       fileInputRef.current?.click();
     } else {
