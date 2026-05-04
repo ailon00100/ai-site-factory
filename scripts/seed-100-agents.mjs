@@ -29,16 +29,16 @@ const ALL_100_AGENTS = [
   { subdomain: 'prompt-gen', name: '提示词工程师', description: '输入需求，生成各类 AI 顶级提示词', category: 'text', icon: '🧠', model: 'deepseek-ai/DeepSeek-V3', color: '#8b5cf6' },
 
   // ================= 2. 视觉设计矩阵 (Vision) =================
-  { subdomain: 'logo', name: 'AI Logo 设计站', description: '输入品牌名生成矢量灵感', category: 'vision', icon: '🎨', model: 'black-forest-labs/FLUX.1-schnell', color: '#ec4899' },
-  { subdomain: 'fix', name: '老照片修复站', description: '视觉模型修复模糊图片并上色', category: 'vision', icon: '🖼️', model: 'Qwen/Qwen2-VL-72B-Instruct', color: '#10b981' },
-  { subdomain: 'avatar', name: '动漫头像生成', description: '上传照片转日系/美漫风格头像', category: 'vision', icon: '🧑‍🎨', model: 'black-forest-labs/FLUX.1-schnell', color: '#8b5cf6' },
-  { subdomain: 'interior', name: '室内装修设计', description: '毛坯房照片生成精装效果图', category: 'vision', icon: '🏠', model: 'Qwen/Qwen2-VL-72B-Instruct', color: '#f59e0b' },
-  { subdomain: 'tattoo', name: '纹身图腾设计', description: '输入风格和理念生成纹身手稿', category: 'vision', icon: '🐉', model: 'black-forest-labs/FLUX.1-schnell', color: '#14b8a6' },
-  { subdomain: 'ui-mockup', name: 'UI 界面生成', description: '文字描述生成 App 界面线框图', category: 'vision', icon: '📱', model: 'Qwen/Qwen2-VL-72B-Instruct', color: '#3b82f6' },
-  { subdomain: 'poster', name: '海报排版创意', description: '输入文案生成电影/节日海报灵感', category: 'vision', icon: '📌', model: 'black-forest-labs/FLUX.1-schnell', color: '#f43f5e' },
-  { subdomain: 'shoe', name: '潮鞋外观设计', description: '设计你的专属概念球鞋', category: 'vision', icon: '👟', model: 'black-forest-labs/FLUX.1-schnell', color: '#fbbf24' },
-  { subdomain: 'packaging', name: '产品包装设计', description: '快消品/礼盒外包装视觉设计', category: 'vision', icon: '📦', model: 'Qwen/Qwen2-VL-72B-Instruct', color: '#2dd4bf' },
-  { subdomain: 'comic', name: '漫画分镜脚本', description: '输入故事生成漫画分镜画面描述', category: 'vision', icon: '🗯️', model: 'deepseek-ai/DeepSeek-V3', color: '#6366f1' },
+  { subdomain: 'logo', name: 'AI Logo 设计站', description: '输入品牌名生成矢量灵感', category: 'vision', icon: '🎨', model: 'Kwai-Kolors/Kolors', color: '#ec4899' },
+  { subdomain: 'fix', name: '老照片修复站', description: '视觉模型修复模糊图片并上色', category: 'vision', icon: '🖼️', model: 'Kwai-Kolors/Kolors', color: '#10b981' },
+  { subdomain: 'avatar', name: '动漫头像生成', description: '上传照片转日系/美漫风格头像', category: 'vision', icon: '🧑‍🎨', model: 'Kwai-Kolors/Kolors', color: '#8b5cf6' },
+  { subdomain: 'interior', name: '室内装修设计', description: '毛坯房照片生成精装效果图', category: 'vision', icon: '🏠', model: 'Kwai-Kolors/Kolors', color: '#f59e0b' },
+  { subdomain: 'tattoo', name: '纹身图腾设计', description: '输入风格和理念生成纹身手稿', category: 'vision', icon: '🐉', model: 'Kwai-Kolors/Kolors', color: '#14b8a6' },
+  { subdomain: 'ui-mockup', name: 'UI 界面生成', description: '文字描述生成 App 界面线框图', category: 'vision', icon: '📱', model: 'Kwai-Kolors/Kolors', color: '#3b82f6' },
+  { subdomain: 'poster', name: '海报排版创意', description: '输入文案生成电影/节日海报灵感', category: 'vision', icon: '📌', model: 'Kwai-Kolors/Kolors', color: '#f43f5e' },
+  { subdomain: 'shoe', name: '潮鞋外观设计', description: '设计你的专属概念球鞋', category: 'vision', icon: '👟', model: 'Kwai-Kolors/Kolors', color: '#fbbf24' },
+  { subdomain: 'packaging', name: '产品包装设计', description: '快消品/礼盒外包装视觉设计', category: 'vision', icon: '📦', model: 'Kwai-Kolors/Kolors', color: '#2dd4bf' },
+  { subdomain: 'comic', name: '漫画分镜脚本', description: '输入故事生成漫画分镜画面描述', category: 'vision', icon: '🗯️', model: 'Kwai-Kolors/Kolors', color: '#6366f1' },
 
   // ================= 3. 程序员代码矩阵 (Code) =================
   { subdomain: 'audit', name: '代码审计站', description: '上传代码，查找漏洞并修复', category: 'code', icon: '💻', model: 'deepseek-ai/DeepSeek-V3', color: '#0ea5e9' },
@@ -54,7 +54,7 @@ const ALL_100_AGENTS = [
 
   // ================= 4. 商业职场矩阵 (Business) =================
   { subdomain: 'interview', name: '模拟面试官', description: '针对特定岗位进行文字/语音对练', category: 'business', icon: '🤝', model: 'deepseek-ai/DeepSeek-V3', color: '#f59e0b' },
-  { subdomain: 'contract', name: '合同风险分析', description: '标记合同中的“霸王条款”', category: 'business', icon: '⚖️', model: 'Qwen/Qwen2-VL-72B-Instruct', color: '#ef4444' },
+  { subdomain: 'contract', name: '合同风险分析', description: '标记合同中的“霸王条款”', category: 'business', icon: '⚖️', model: 'Kwai-Kolors/Kolors', color: '#ef4444' },
   { subdomain: 'ppt', name: 'PPT 架构师', description: '生成各类汇报演讲的 PPT 逻辑大纲', category: 'business', icon: '📊', model: 'deepseek-ai/DeepSeek-V3', color: '#3b82f6' },
   { subdomain: 'bp', name: '商业计划书', description: '一键生成融资 BP 核心商业模式', category: 'business', icon: '💡', model: 'deepseek-ai/DeepSeek-V3', color: '#8b5cf6' },
   { subdomain: 'okr', name: 'OKR 制定器', description: '帮你写出老板满意的目标与关键结果', category: 'business', icon: '🎯', model: 'deepseek-ai/DeepSeek-V3', color: '#10b981' },

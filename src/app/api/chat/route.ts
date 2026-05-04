@@ -35,12 +35,19 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (options && agent.category === 'vision' && agent.model_id.toLowerCase().includes('flux')) {
+    // 图像生成：CreativeInterface 传入 options，且 agent 为 vision/multimedia 类
+    const imageGenModels = ['flux', 'kolors', 'qwen-image', 'schnell'];
+    const isImageGenRequest = options && (
+      agent.category === 'vision' ||
+      imageGenModels.some(m => agent.model_id.toLowerCase().includes(m))
+    );
+
+    if (isImageGenRequest) {
       const imageUrl = await callImageGeneration(
         agent.api_provider,
         agent.model_id,
         userMessageContent,
-        { ratio: options.ratio }
+        { ratio: options.ratio, guidance: options.guidance }
       );
 
       if (user) {
