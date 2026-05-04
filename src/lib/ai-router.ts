@@ -54,7 +54,7 @@ export async function callAiStream(
 }
 
 /**
- * 调用图像生成接口
+ * 调用图像生成接口。DeepSeek 和阿里云不提供图像生成，自动回退到 SiliconFlow。
  */
 export async function callImageGeneration(
   provider: ApiProvider,
@@ -62,11 +62,16 @@ export async function callImageGeneration(
   prompt: string,
   options?: { ratio?: string }
 ): Promise<string> {
-  const baseUrl = API_ENDPOINTS[provider];
+  // SiliconFlow 是目前唯一支持图像生成的提供商
+  const imageProvider: ApiProvider = 'siliconflow';
+  const baseUrl = API_ENDPOINTS[imageProvider];
   const apiUrl = `${baseUrl}/images/generations`;
-  const apiKey = getApiKey(provider);
+  const apiKey = getApiKey(imageProvider);
 
-  // 映射比例到 SiliconFlow 支持的格式 (例如 1024x1024)
+  if (provider !== 'siliconflow') {
+    console.log(`🔄 ${provider} 不支持图像生成，自动切换到 SiliconFlow FLUX`);
+  }
+
   const sizeMap: Record<string, string> = {
     '1:1': '1024x1024',
     '4:3': '1024x768',
@@ -80,7 +85,7 @@ export async function callImageGeneration(
     batch_size: 1,
   };
 
-  console.log(`🎨 Generating image with ${provider} (${modelId})...`);
+  console.log(`🎨 Generating image with ${imageProvider} (${modelId})...`);
 
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -92,8 +97,8 @@ export async function callImageGeneration(
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || '图像生成失败');
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || `图像生成失败 (HTTP ${response.status})`);
   }
 
   const data = await response.json();

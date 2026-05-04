@@ -11,14 +11,16 @@ interface ChatInterfaceProps {
   agent: Agent;
   fullWidth?: boolean;
   initialMessage?: string;
+  onTypingChange?: (isTyping: boolean) => void;
 }
 
-export default function ChatInterface({ agent, fullWidth = false, initialMessage }: ChatInterfaceProps) {
+export default function ChatInterface({ agent, fullWidth = false, initialMessage, onTypingChange }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [fileContent, setFileContent] = useState<string | null>(null);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -50,6 +52,9 @@ export default function ChatInterface({ agent, fullWidth = false, initialMessage
         reader.readAsDataURL(file);
       } else {
         setFilePreview(null);
+        const reader = new FileReader();
+        reader.onload = (e) => setFileContent(e.target?.result as string);
+        reader.readAsText(file);
       }
     }
   };
@@ -66,14 +71,16 @@ export default function ChatInterface({ agent, fullWidth = false, initialMessage
 
     const userMessage = input.trim();
     const currentPreview = filePreview;
+    const currentFileContent = fileContent;
+    const currentFileName = selectedFile?.name;
 
-    // 清空输入
     setInput('');
     setSelectedFile(null);
     setFilePreview(null);
+    setFileContent(null);
     setIsTyping(true);
+    onTypingChange?.(true);
 
-    // 添加用户消息到列表
     const newUserMsg: ChatMessage = { role: 'user', content: userMessage };
     setMessages(prev => [...prev, newUserMsg]);
 
@@ -84,6 +91,8 @@ export default function ChatInterface({ agent, fullWidth = false, initialMessage
         body: JSON.stringify({
           message: userMessage,
           image: currentPreview,
+          fileContent: currentFileContent,
+          fileName: currentFileName,
           subdomain: agent.subdomain,
           history: messages.slice(-6),
         }),
@@ -120,7 +129,9 @@ export default function ChatInterface({ agent, fullWidth = false, initialMessage
                 newMsgs[newMsgs.length - 1].content = accumulatedContent;
                 return newMsgs;
               });
-            } catch (e) {}
+            } catch (e) {
+              console.warn('SSE parse error:', e, 'line:', dataStr.slice(0, 80));
+            }
           } else {
             accumulatedContent += chunkValue;
             setMessages(prev => {
@@ -139,6 +150,7 @@ export default function ChatInterface({ agent, fullWidth = false, initialMessage
       setMessages(prev => [...prev, { role: 'assistant', content: '抱歉，我现在遇到了一点技术问题，请稍后再试。' }]);
     } finally {
       setIsTyping(false);
+      onTypingChange?.(false);
     }
   };
 

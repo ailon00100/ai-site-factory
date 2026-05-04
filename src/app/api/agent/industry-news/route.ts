@@ -51,7 +51,9 @@ export async function POST(req: NextRequest) {
           try {
             const json = JSON.parse(data);
             fullText += json.choices[0]?.delta?.content || '';
-          } catch (e) {}
+          } catch (e) {
+            console.warn('SSE parse error in industry-news:', e);
+          }
         }
       }
     }

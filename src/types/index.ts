@@ -1,4 +1,4 @@
-export type AgentCategory = 'text' | 'image' | 'vision' | 'audio' | 'video' | 'search' | 'code' | 'business' | 'edu' | 'marketing' | 'lifestyle' | 'pro' | 'game';
+export type AgentCategory = 'text' | 'vision' | 'code' | 'business' | 'edu' | 'marketing' | 'lifestyle' | 'multimedia' | 'pro' | 'game';
 export type ApiProvider = 'siliconflow' | 'aliyun' | 'deepseek';
 
 export interface Agent {
@@ -22,9 +22,4 @@ export interface Agent {
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
-}
-
-export interface ChatRequest {
-  messages: ChatMessage[];
-  subdomain: string;
 }

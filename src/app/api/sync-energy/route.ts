@@ -6,8 +6,8 @@ export async function POST(req: NextRequest) {
   try {
     const { localEnergy } = await req.json();
 
-    if (typeof localEnergy !== 'number' || localEnergy <= 0) {
-      return NextResponse.json({ success: true, message: '无需同步' });
+    if (typeof localEnergy !== 'number' || localEnergy <= 0 || localEnergy > 5000) {
+      return NextResponse.json({ success: true, message: localEnergy > 5000 ? '同步数据异常' : '无需同步' });
     }
 
     const cookieStore = await cookies();
