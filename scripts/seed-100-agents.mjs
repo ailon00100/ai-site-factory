@@ -54,7 +54,7 @@ const ALL_100_AGENTS = [
 
   // ================= 4. 商业职场矩阵 (Business) =================
   { subdomain: 'interview', name: '模拟面试官', description: '针对特定岗位进行文字/语音对练', category: 'business', icon: '🤝', model: 'deepseek-ai/DeepSeek-V3', color: '#f59e0b' },
-  { subdomain: 'contract', name: '合同风险分析', description: '标记合同中的“霸王条款”', category: 'business', icon: '⚖️', model: 'Kwai-Kolors/Kolors', color: '#ef4444' },
+  { subdomain: 'contract', name: '合同风险分析', description: '标记合同中的”霸王条款”', category: 'business', icon: '⚖️', model: 'deepseek-ai/DeepSeek-V3', color: '#ef4444' },
   { subdomain: 'ppt', name: 'PPT 架构师', description: '生成各类汇报演讲的 PPT 逻辑大纲', category: 'business', icon: '📊', model: 'deepseek-ai/DeepSeek-V3', color: '#3b82f6' },
   { subdomain: 'bp', name: '商业计划书', description: '一键生成融资 BP 核心商业模式', category: 'business', icon: '💡', model: 'deepseek-ai/DeepSeek-V3', color: '#8b5cf6' },
   { subdomain: 'okr', name: 'OKR 制定器', description: '帮你写出老板满意的目标与关键结果', category: 'business', icon: '🎯', model: 'deepseek-ai/DeepSeek-V3', color: '#10b981' },
@@ -96,7 +96,7 @@ const ALL_100_AGENTS = [
   { subdomain: 'dream', name: '赛博解梦', description: '结合弗洛伊德与周公解梦解析梦境', category: 'lifestyle', icon: '🌙', model: 'deepseek-ai/DeepSeek-V3', color: '#8b5cf6' },
   { subdomain: 'tarot', name: '塔罗占卜师', description: '在线抽牌解析近期事业爱情运势', category: 'lifestyle', icon: '🔮', model: 'deepseek-ai/DeepSeek-V3', color: '#ec4899' },
   { subdomain: 'pet', name: '宠物翻译官', description: '解答猫狗异常行为与喂养建议', category: 'lifestyle', icon: '🐶', model: 'deepseek-ai/DeepSeek-V3', color: '#10b981' },
-  { subdomain: 'outfit', name: '穿搭灵感', description: '根据天气和场合提供男/女穿搭方案', category: 'lifestyle', icon: '👗', model: 'deepseek-ai/DeepSeek-V3', color: '#f43f5e' },
+  { subdomain: 'outfit', name: '穿搭灵感', description: '根据天气和场合生成男/女穿搭方案', category: 'lifestyle', icon: '👗', model: 'Kwai-Kolors/Kolors', color: '#f43f5e', ui_template: 'creative' },
   { subdomain: 'gift', name: '送礼参谋', description: '解决直男/选择困难症的送礼难题', category: 'lifestyle', icon: '🎁', model: 'deepseek-ai/DeepSeek-V3', color: '#f59e0b' },
   { subdomain: 'movie-rec', name: '周末影单', description: '根据极其偏门的情绪推荐冷门好片', category: 'lifestyle', icon: '🍿', model: 'deepseek-ai/DeepSeek-V3', color: '#6366f1' },
 
@@ -160,6 +160,13 @@ async function seed100Agents() {
       case 'edu':
         suggestions = ['用简单的语言解释这个概念', '帮我批改一下这篇作文', '出几道题考考我'];
         break;
+      case 'lifestyle':
+        if (agent.subdomain === 'outfit') {
+          suggestions = ['日系通勤风穿搭', '韩系街头休闲穿搭', '商务正装搭配方案'];
+        } else {
+          suggestions = ['你可以做什么？', '帮我解决一个具体问题', '给我一些专业建议'];
+        }
+        break;
       default:
         suggestions = ['你可以做什么？', '帮我解决一个具体问题', '给我一些专业建议'];
     }
@@ -173,7 +180,7 @@ async function seed100Agents() {
       model_id: agent.model,
       primary_color: agent.color,
       api_provider: 'siliconflow',
-      credits_per_call: 1,
+      credits_per_call: agent.subdomain === 'outfit' ? 3 : 1,
       is_active: true,
       deploy_status: 'pending',
       suggested_prompts: suggestions

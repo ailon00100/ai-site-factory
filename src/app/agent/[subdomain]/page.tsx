@@ -18,19 +18,31 @@ export default async function AgentPage({ params }: Props) {
     notFound();
   }
 
-  // 根据分类决定使用的界面模板
-  const renderInterface = () => {
+  // 站点级 UI 覆写（子域名维度），优先级最高
+  const SUBDOMAIN_UI_OVERRIDES: Record<string, 'creative' | 'analyst' | 'chat'> = {
+    outfit: 'creative',  // 穿搭灵感 → 图像生成界面
+  };
+
+  const resolveTemplate = (): 'creative' | 'analyst' | 'chat' => {
+    if (agent.ui_template) return agent.ui_template;
+    if (SUBDOMAIN_UI_OVERRIDES[subdomain]) return SUBDOMAIN_UI_OVERRIDES[subdomain];
     const category = agent.category;
-    
-    if (['vision', 'multimedia', 'marketing'].includes(category)) {
+    if (category === 'vision') return 'creative';
+    if (['code', 'pro', 'business'].includes(category)) return 'analyst';
+    return 'chat';
+  };
+
+  const renderInterface = () => {
+    const tmpl = resolveTemplate();
+
+    if (tmpl === 'creative') {
       return <CreativeInterface agent={agent} />;
     }
-    
-    if (['code', 'pro', 'business'].includes(category)) {
+
+    if (tmpl === 'analyst') {
       return <AnalystInterface agent={agent} />;
     }
-    
-    // 默认使用标准对话界面
+
     return (
       <div className="flex-1 flex overflow-hidden max-w-7xl mx-auto w-full">
         <div className="flex-1 flex flex-col border-r border-gray-800/50">

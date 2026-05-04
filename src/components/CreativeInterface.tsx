@@ -31,6 +31,13 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
     guidance: 7.5
   });
 
+  const defaultPrompts: Record<string, string[]> = {
+    vision: ['设计一个简约风格的 Logo', '生成一张赛博朋克风的海报', '为一个运动品牌设计头像'],
+    multimedia: ['写一段 30 秒的短视频脚本', '生成一张音乐专辑封面', '设计一个直播间的背景'],
+    marketing: ['写一句抓眼球的广告语', '设计一张促销海报', '生成产品宣传图的文案'],
+  };
+  const prompts = agent.suggested_prompts?.length ? agent.suggested_prompts : (defaultPrompts[agent.category] || []);
+
   const handleGenerate = async (overridePrompt?: string) => {
     const activePrompt = overridePrompt || prompt;
     if (!activePrompt.trim() || isGenerating) return;
@@ -205,8 +212,8 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
                     alt="Generated" 
                     className="max-h-[65vh] w-auto object-contain bg-gray-900 transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8 gap-4">
-                    <button 
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-8 gap-4">
+                    <button
                       onClick={downloadImage}
                       className="flex-1 py-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white text-xs font-bold flex items-center justify-center gap-2 hover:bg-white/20 transition-all"
                     >
@@ -223,9 +230,9 @@ export default function CreativeInterface({ agent }: CreativeInterfaceProps) {
         </div>
         <div className="p-8 bg-gradient-to-t from-black via-black/80 to-transparent space-y-6">
           {/* 灵感推荐 */}
-          {agent.suggested_prompts && agent.suggested_prompts.length > 0 && (
+          {prompts.length > 0 && (
             <div className="max-w-3xl mx-auto flex flex-wrap gap-2">
-              {agent.suggested_prompts.map((p, i) => (
+              {prompts.map((p, i) => (
                 <div 
                   key={i}
                   className="group relative flex items-center gap-2 bg-gray-900/50 hover:bg-blue-500/10 border border-gray-800 hover:border-blue-500/50 rounded-xl px-4 py-2 transition-all cursor-pointer overflow-hidden"

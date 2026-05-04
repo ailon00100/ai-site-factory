@@ -1,5 +1,6 @@
 export type AgentCategory = 'text' | 'vision' | 'code' | 'business' | 'edu' | 'marketing' | 'lifestyle' | 'multimedia' | 'pro' | 'game';
 export type ApiProvider = 'siliconflow' | 'aliyun' | 'deepseek';
+export type UiTemplate = 'chat' | 'creative' | 'analyst';
 
 export interface Agent {
   id: string;
@@ -13,6 +14,7 @@ export interface Agent {
   api_provider: ApiProvider;
   credit_per_use: number;
   is_active: boolean;
+  ui_template?: UiTemplate;
   industry_info?: { title: string; content: string }[];
   suggested_prompts?: string[];
   created_at: string;
